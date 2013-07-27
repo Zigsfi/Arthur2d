@@ -6,7 +6,7 @@ import java.awt.RadialGradientPaint;
 public class Light {
 	public int xPos, yPos;
 	public int range;
-	RadialGradientPaint gradient;
+	private RadialGradientPaint gradient;
 	public Light(int x, int y, int r) {
 		xPos = x;
 		yPos = y;
@@ -14,5 +14,13 @@ public class Light {
 		float f[] = {0.6f, 1f};
 		Color c[] = {new Color(0, 0, 0, 0), new Color(0, 0, 0)};
 		gradient = new RadialGradientPaint(xPos, yPos, range, f, c);
+	}
+	
+	public RadialGradientPaint getGradient() {
+		float f[] = {0.6f, 1f};
+		Color c[] = {new Color(0, 0, 0, 0), new Color(0, 0, 0)};
+		gradient = new RadialGradientPaint(xPos, yPos, range, f, c);
+
+		return gradient;
 	}
 }
