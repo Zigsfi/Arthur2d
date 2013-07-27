@@ -24,6 +24,9 @@ public class Engine extends Canvas implements MouseListener, MouseMotionListener
 	 */
 	private static final long serialVersionUID = 1L;
 	private LinkedList<Drawable> drawables;
+	private LinkedList<Drawable> constants;
+	private LinkedList<ShadowCaster> shadows;
+	private LinkedList<Light> lights;
 	private BufferedImage[] layer;
 	private BufferedImage buffImg;
 	private int width, height;
@@ -33,7 +36,11 @@ public class Engine extends Canvas implements MouseListener, MouseMotionListener
 	final EngineHost eng;
 	public Engine(EngineHost e, int w, int h, int rx, int ry, int layers) {
 		drawables = new LinkedList<Drawable>();
+		constants = new LinkedList<Drawable>();
+		shadows = new LinkedList<ShadowCaster>();
+		lights = new LinkedList<Light>();
 		width = w;
+		
 		height = h;
 		resX = rx;
 		resY = ry;
@@ -84,25 +91,36 @@ public class Engine extends Canvas implements MouseListener, MouseMotionListener
 		for (int i = 0; i < layer.length; i++) {
 			off.drawImage(layer[i], 0, 0, resX, resY, camX, camY, camX + camSX, camY + camSY, this);
 		}
+		drawIt = constants.listIterator();
+		while (drawIt.hasNext()) {
+			d = drawIt.next();
+			d.draw(layer);
+		}
+		
+		
 		renderLights(off);
 
 		g.drawImage(buffImg, 0, 0, resX, resY, this);
 	}
 	public void renderLights(Graphics2D g) {
-		Light l = new Light(mousex, mousey, 500);
+		Light l = new Light (mousex, mousey, 200);
 		
-		ShadowCaster s = new ShadowCaster(70, 70, 40, 40);
-		renderShadow(l, s, g);
-		s = new ShadowCaster(170, 70, 40, 40);
-		renderShadow(l, s, g);
+		ShadowCaster s;
+		ListIterator<ShadowCaster> shadowIt = shadows.listIterator();
+		while (shadowIt.hasNext()) {
+			s = shadowIt.next();
+			renderShadow(l, s, g);
+		}
 
-		l = new Light(300, 300, 500);
-		renderShadow(l, s, g);
+
+
 		g.setPaint(l.gradient);
 		g.fill(new Rectangle(0, 0, 1000, 1000));
 	}
 	
-	public void renderShadow(Light l, ShadowCaster s, Graphics g) {
+	public void renderShadow(Light l, ShadowCaster s, Graphics t) {
+		BufferedImage shadowImg = new BufferedImage(resX, resY, BufferedImage.TYPE_INT_ARGB);
+		Graphics2D g = (Graphics2D)shadowImg.getGraphics();
 		g.setColor(Color.black);
 		g.drawOval(l.xPos, l.yPos, 10, 10);
 		g.fillRect(s.xPos, s.yPos, s.width, s.height);
@@ -140,6 +158,8 @@ public class Engine extends Canvas implements MouseListener, MouseMotionListener
 		shadow.addPoint(s.xPos + s.width, s.yPos);
 //		g.setColor(Color.blue);
 		g.fillPolygon(shadow);
+		g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC).derive(0.55f));
+		t.drawImage(shadowImg, 0, 0, this);
 		
 	}
 	public void setCamera(int x, int y, int sx, int sy) {
@@ -148,9 +168,39 @@ public class Engine extends Canvas implements MouseListener, MouseMotionListener
 		camSX = sx;
 		camSY = sy;
 	}
-	
+	public void flush() {
+		flushDrawables();
+		flushConstants();
+		flushLights();
+		flushShadows();
+	}
+	public void flushShadows() {
+		// TODO Auto-generated method stub
+		shadows.clear();
+	}
+	public void flushLights() {
+		// TODO Auto-generated method stub
+		lights.clear();
+	}
+	public void flushConstants() {
+		// TODO Auto-generated method stub
+		constants.clear();
+	}
+	public void flushDrawables() {
+		// TODO Auto-generated method stub
+		drawables.clear();
+	}
 	public void addDrawable(Drawable d) {
 		drawables.add(d);
+	}
+	public void addShadow(ShadowCaster s) {
+		shadows.add(s);
+	}
+	public void addLight(Light l) {
+		lights.add(l);
+	}
+	public void addConstant(Drawable d) {
+		constants.add(d);
 	}
 
 	public BufferedImage getScene() {
