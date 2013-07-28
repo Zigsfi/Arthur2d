@@ -7,17 +7,17 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
-import java.awt.Rectangle;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.Area;
-import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 import java.util.LinkedList;
 import java.util.ListIterator;
 
-public class Engine extends Canvas implements MouseListener, MouseMotionListener{
+public class Engine extends Canvas implements MouseListener, MouseMotionListener {
 
 
 	/**
@@ -35,6 +35,7 @@ public class Engine extends Canvas implements MouseListener, MouseMotionListener
 	public int mousex, mousey;
 	private int camX, camY, camSX, camSY;
 	final EngineHost eng;
+	//world width, height, screen resolution x, screen resolution y, number of layers
 	public Engine(EngineHost e, int w, int h, int rx, int ry, int layers) {
 		drawables = new LinkedList<Drawable>();
 		constants = new LinkedList<Drawable>();
@@ -71,7 +72,11 @@ public class Engine extends Canvas implements MouseListener, MouseMotionListener
 	public void update(Graphics g) {
 		paint(g);
 	}
-
+	
+	public void translateCamera(int x, int y) {
+		camX += x;
+		camY += y;
+	}
 	public void paint(Graphics g) {
 		Graphics2D off = (Graphics2D) buffImg.getGraphics();
 		off.setColor(Color.white);
@@ -98,8 +103,10 @@ public class Engine extends Canvas implements MouseListener, MouseMotionListener
 			d.draw(layer);
 		}
 
-
-		renderLights(off);
+		BufferedImage shadowLayer = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+		Graphics2D shadowL = (Graphics2D)shadowLayer.getGraphics();
+		renderLights(shadowL);
+		off.drawImage(shadowLayer, 0, 0, resX, resY, camX, camY, camX + camSX, camY + camSY, this);
 
 		g.drawImage(buffImg, 0, 0, resX, resY, this);
 	}
@@ -129,11 +136,11 @@ public class Engine extends Canvas implements MouseListener, MouseMotionListener
 //			g.fill(new Rectangle(0, 0, 1000, 1000));
 			
 
-
 		}
 		g2.drawImage(shadowLayer, 0, 0, this);
-		g2.setColor(Color.black);
-		g2.fill(shadow);
+		g2.setColor(new Color(0, 0, 0, 0.8f));
+		if (shadow != null) 
+			g2.fill(shadow);
 
 
 	}
@@ -299,5 +306,6 @@ public class Engine extends Canvas implements MouseListener, MouseMotionListener
 		// TODO Auto-generated method stub
 
 	}
+
 
 }
